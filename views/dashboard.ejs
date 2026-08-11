@@ -9,16 +9,33 @@
 <body>
     <main class="page-wrapper">
         <section class="auth-container">
-            <div class="auth-panel">
-                <header class="auth-header">
-                    <h1>Dashboard</h1>
-                    <p>Welcome to your secure dashboard.</p>
-                </header>
+            <div class="auth-banner">
+                <div class="brand-header">
+                    <div class="brand-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M12 4v16" stroke="white"/></svg>
+                    </div>
+                    <div class="brand-name">AuthSystem</div>
+                </div>
+
+                <div class="banner-hero-content">
+                    <h2 class="banner-title">Welcome</h2>
+                    <p class="banner-subtitle">Your secure dashboard.</p>
+                    <div class="banner-illustration-wrapper">
+                        <img class="banner-illustration" src="/assets/auth_hero.jpg" alt="Dashboard" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-form-card">
+                <div class="form-header">
+                    <div class="form-title">Dashboard</div>
+                    <div class="form-subtitle">You are signed in and your session is protected by JWT.</div>
+                </div>
 
                 <div class="dashboard-content">
                     <p>Your user id is: <strong><%= userId %></strong></p>
-                    <p>This page is protected by JWT authentication.</p>
-                    <a class="btn btn-secondary" href="/logout">Sign out</a>
+                    <p>Secure pages are protected with token and password version checks.</p>
+                    <a class="btn-primary" href="/logout">Sign out</a>
                 </div>
             </div>
         </section>

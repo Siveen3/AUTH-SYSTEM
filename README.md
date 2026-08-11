@@ -5,6 +5,8 @@
 A small MVC-based authentication system built with Express, MongoDB, and EJS.
 It includes signup, login, password reset, JWT-protected pages, and email reset link delivery.
 
+This fork includes a refreshed, modern UI for the auth views (login, signup, forgot/reset password, dashboard), a theme toggle (light/dark), and a developer-friendly in-memory database option for running the app without installing MongoDB.
+
 ## Project Structure
 
 - `controllers/` - request handlers and controller logic
@@ -24,13 +26,28 @@ It includes signup, login, password reset, JWT-protected pages, and email reset 
    ```bash
    npm install
    ```
-2. Copy `config.env.example` to `config.env` and fill in the required values.
-3. Start MongoDB locally or use a hosted MongoDB URI.
-4. Run the server:
+2. Copy `config.env.example` to `config.env` and edit values as needed.
+
+   For local development without MongoDB, enable the in-memory adapter by setting:
+   ```text
+   USE_IN_MEMORY_DB=true
+   ```
+
+   Required secrets (set to any long random strings for dev):
+   ```text
+   JWT_ACCESS_SECRET=your_long_random_secret
+   JWT_RESET_SECRET=your_long_random_secret
+   PASSWORD_RESET_URL=http://localhost:3000/reset-password
+   ```
+
+   SMTP settings are optional. If SMTP is not configured, password-reset links will be printed to the server console for easy local testing. To silence console logging in CI, set `SUPPRESS_RESET_LINK_CONSOLE=true`.
+
+3. Start the server:
    ```bash
    npm start
    ```
-5. Open the app at `http://localhost:3000`.
+
+4. Open the app at `http://localhost:3000`.
 
 ## Available Pages
 
@@ -51,13 +68,17 @@ It includes signup, login, password reset, JWT-protected pages, and email reset 
 
 Copy `config.env.example` to `config.env` and provide values for:
 
-- `MONGODB_URI`
+- `MONGODB_URI` (optional if `USE_IN_MEMORY_DB=true`)
+- `USE_IN_MEMORY_DB` (set to `true` to run without MongoDB)
 - `JWT_ACCESS_SECRET`
 - `JWT_RESET_SECRET`
 - `PASSWORD_RESET_URL`
-- `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_FROM`
+- `SMTP_HOST` (optional)
+- `SMTP_PORT` (optional)
+- `SMTP_FROM` (optional)
+
+Optional dev flags:
+- `SUPPRESS_RESET_LINK_CONSOLE=true` (disables console logging of reset links)
 
 Optional:
 - `JWT_ACCESS_EXPIRES_IN`

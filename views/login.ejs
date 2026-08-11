@@ -9,35 +9,79 @@
 <body>
     <main class="page-wrapper">
         <section class="auth-container">
-            <div class="auth-panel">
-                <header class="auth-header">
-                    <h1>Sign in</h1>
-                    <p>Welcome back. Log in to access your account.</p>
-                </header>
+            <div class="auth-banner">
+                <div class="brand-header">
+                    <div class="brand-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M12 4v16" stroke="white"/></svg>
+                    </div>
+                    <div class="brand-name">AuthSystem</div>
+                </div>
+
+                <div class="banner-hero-content">
+                    <h2 class="banner-title">Secure sign in for modern apps</h2>
+                    <p class="banner-subtitle">Fast, safe authentication with JWT, password reset, and a lightweight in-memory dev option.</p>
+                    <div class="banner-illustration-wrapper">
+                        <img class="banner-illustration" src="/assets/auth_hero.jpg" alt="Auth illustration" />
+                    </div>
+                </div>
+
+                <div class="banner-features">
+                    <div class="feature-pill">Safe JWT sessions</div>
+                    <div class="feature-pill">Password reset flow</div>
+                    <div class="feature-pill">Local dev friendly</div>
+                </div>
+
+                <div class="banner-footer">Build and test locally with or without a database.</div>
+            </div>
+
+            <div class="auth-form-card">
+                <div class="top-actions-bar">
+                    <button id="themeToggleBtn" class="theme-toggle-btn" title="Toggle theme">
+                        <svg class="light-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/></svg>
+                        <svg class="dark-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                    </button>
+                </div>
+
+                <div class="form-header">
+                    <div class="form-title">Sign in</div>
+                    <div class="form-subtitle">Welcome back — enter your credentials to continue.</div>
+                </div>
+
                 <form id="loginForm" class="auth-form">
                     <div class="form-group">
-                        <label for="loginEmail">Email address</label>
-                        <input id="loginEmail" name="email" type="email" required value="<%= registeredEmail %>">
+                        <label class="form-label" for="loginEmail">Email address</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon-left">@</span>
+                            <input id="loginEmail" class="form-control" name="email" type="email" required value="<%= registeredEmail %>">
+                        </div>
                         <div id="loginEmailFeedback" class="feedback-message"></div>
                     </div>
+
                     <div class="form-group">
-                        <label for="loginPassword">Password</label>
-                        <div class="password-field-group">
-                            <input id="loginPassword" name="password" type="password" required>
-                            <button type="button" class="btn btn-secondary btn-toggle-password" data-target="loginPassword">Show</button>
+                        <label class="form-label" for="loginPassword">Password</label>
+                        <div class="input-wrapper">
+                            <span class="input-icon-left">*</span>
+                            <input id="loginPassword" class="form-control" name="password" type="password" required>
+                            <button type="button" class="btn-toggle-password" data-target="loginPassword">
+                                <svg class="eye-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/></svg>
+                                <svg class="eye-off-icon" style="display:none" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.67 21.67 0 0 1 5.14-6.46"/></svg>
+                            </button>
                         </div>
                         <div id="loginPasswordFeedback" class="feedback-message"></div>
                     </div>
-                    <div class="form-row form-row-space-between">
-                        <label class="form-checkbox">
-                            <input id="rememberMe" type="checkbox">
+
+                    <div class="form-options-row">
+                        <label class="custom-checkbox-label">
+                            <input id="rememberMe" class="custom-checkbox-input" type="checkbox"><span class="checkbox-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="20 6 9 17 4 12"/></svg></span>
                             <span>Remember me</span>
                         </label>
-                        <a class="link" href="/forgot-password">Forgot Password?</a>
+                        <a class="link-forgot" href="/forgot-password">Forgot password?</a>
                     </div>
-                    <button class="btn btn-primary" type="submit">Continue</button>
+
+                    <button class="btn-primary" type="submit"><span class="btn-text">Continue</span><span class="btn-spinner"></span></button>
                 </form>
-                <footer class="auth-footer">
+
+                <footer class="auth-footer" style="margin-top:1.25rem">
                     <p>New here? <a href="/signup">Create an account</a></p>
                 </footer>
             </div>
