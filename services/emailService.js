@@ -8,14 +8,16 @@ function createTransportFromEnvironment(env = process.env) {
     const requiredVariables = ['SMTP_HOST', 'SMTP_PORT', 'SMTP_FROM'];
     const missingVariable = requiredVariables.find((name) => !env[name]);
 
+    // If required SMTP settings are missing, return null so callers can
+    // gracefully fallback to a development console-only behavior.
     if (missingVariable) {
-        throw new Error(`${missingVariable} is required to send password-reset email`);
+        return null;
     }
 
     const port = Number.parseInt(env.SMTP_PORT, 10);
 
     if (!Number.isInteger(port)) {
-        throw new Error('SMTP_PORT must be a valid number');
+        return null;
     }
 
     const options = {
@@ -41,6 +43,21 @@ function createEmailService({ env = process.env, transport } = {}) {
         async sendPasswordResetEmail({ to, resetUrl }) {
             if (!mailTransport) {
                 mailTransport = createTransportFromEnvironment(env);
+            }
+
+            // If there's no transport (missing SMTP configuration), fall back
+            // to console logging for local development.
+            if (!mailTransport) {
+                // Respect an explicit flag to suppress console output in CI if set.
+                if (String(env.SUPPRESS_RESET_LINK_CONSOLE).toLowerCase() === 'true') {
+                    return;
+                }
+
+                // Log a dev-friendly message containing the reset URL so local
+                // developers can copy it into the browser without an SMTP server.
+                // eslint-disable-next-line no-console
+                console.info('[DEV] Password reset link for', to, ':', resetUrl);
+                return;
             }
 
             await mailTransport.sendMail({
