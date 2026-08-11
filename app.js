@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 
+const authRoutes = require('./routes/authRoutes');
 const passwordResetRoutes = require('./routes/passwordResetRoutes');
 const { notFoundHandler, errorHandler } = require('./middleware/errorMiddleware');
 
@@ -17,6 +18,7 @@ app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
+app.use('/api/auth', authRoutes);
 app.use('/api/auth', passwordResetRoutes);
 
 app.use(notFoundHandler);
