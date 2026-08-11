@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <main class="page-wrapper">
+        <section class="auth-container">
+            <div class="auth-panel">
+                <header class="auth-header">
+                    <h1>Sign in</h1>
+                    <p>Welcome back. Log in to access your account.</p>
+                </header>
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="loginEmail">Email address</label>
+                        <input id="loginEmail" name="email" type="email" required value="<%= registeredEmail %>">
+                        <div id="loginEmailFeedback" class="feedback-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <div class="password-field-group">
+                            <input id="loginPassword" name="password" type="password" required>
+                            <button type="button" class="btn btn-secondary btn-toggle-password" data-target="loginPassword">Show</button>
+                        </div>
+                        <div id="loginPasswordFeedback" class="feedback-message"></div>
+                    </div>
+                    <div class="form-row form-row-space-between">
+                        <label class="form-checkbox">
+                            <input id="rememberMe" type="checkbox">
+                            <span>Remember me</span>
+                        </label>
+                        <a class="link" href="/forgot-password">Forgot Password?</a>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Continue</button>
+                </form>
+                <footer class="auth-footer">
+                    <p>New here? <a href="/signup">Create an account</a></p>
+                </footer>
+            </div>
+        </section>
+    </main>
+    <script src="/js/script.js"></script>
+</body>
+</html>

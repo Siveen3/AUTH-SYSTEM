@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <main class="page-wrapper">
+        <section class="auth-container">
+            <div class="auth-panel">
+                <header class="auth-header">
+                    <h1>Create account</h1>
+                    <p>Register a new account to unlock secure access.</p>
+                </header>
+                <form id="signupForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="signupName">Full name</label>
+                        <input id="signupName" name="name" type="text" required>
+                        <div id="signupNameFeedback" class="feedback-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupEmail">Email address</label>
+                        <input id="signupEmail" name="email" type="email" required>
+                        <div id="signupEmailFeedback" class="feedback-message"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <div class="password-field-group">
+                            <input id="signupPassword" name="password" type="password" required>
+                            <button type="button" class="btn btn-secondary btn-toggle-password" data-target="signupPassword">Show</button>
+                        </div>
+                        <div id="signupPasswordFeedback" class="feedback-message"></div>
+                        <div class="password-strength-panel">
+                            <div class="strength-meter">
+                                <span class="strength-segment"></span>
+                                <span class="strength-segment"></span>
+                                <span class="strength-segment"></span>
+                                <span class="strength-segment"></span>
+                            </div>
+                            <div class="strength-label" id="strengthLabel"></div>
+                            <ul class="strength-checklist">
+                                <li id="checkLength">Minimum 8 characters</li>
+                                <li id="checkUpper">Uppercase letter</li>
+                                <li id="checkNumber">Contains a number</li>
+                                <li id="checkSpecial">Contains a special character</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupConfirmPassword">Confirm password</label>
+                        <div class="password-field-group">
+                            <input id="signupConfirmPassword" name="confirmPassword" type="password" required>
+                            <button type="button" class="btn btn-secondary btn-toggle-password" data-target="signupConfirmPassword">Show</button>
+                        </div>
+                        <div id="signupConfirmPasswordFeedback" class="feedback-message"></div>
+                    </div>
+                    <div class="form-row">
+                        <label class="form-checkbox">
+                            <input id="termsCheckbox" type="checkbox" required>
+                            <span>I agree to the <a href="#">terms and conditions</a>.</span>
+                        </label>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Create account</button>
+                </form>
+                <footer class="auth-footer">
+                    <p>Already have an account? <a href="/login">Sign in</a></p>
+                </footer>
+            </div>
+        </section>
+    </main>
+    <script src="/js/script.js"></script>
+</body>
+</html>

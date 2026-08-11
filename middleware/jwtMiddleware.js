@@ -15,11 +15,29 @@ function rejectUnauthorized(res) {
     return res.status(401).json(UNAUTHORIZED_RESPONSE);
 }
 
+function getTokenFromCookie(req) {
+    const cookieHeader = req.get('cookie');
+
+    if (!cookieHeader) {
+        return null;
+    }
+
+    const match = cookieHeader.match(/(?:^|;\s*)accessToken=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
 async function authenticateAccessToken(req, res, next) {
     const authorization = req.get('authorization');
     const parts = authorization ? authorization.trim().split(/\s+/) : [];
+    let token = null;
 
-    if (parts.length !== 2 || parts[0] !== 'Bearer' || !parts[1]) {
+    if (parts.length === 2 && parts[0] === 'Bearer' && parts[1]) {
+        token = parts[1];
+    } else {
+        token = getTokenFromCookie(req);
+    }
+
+    if (!token) {
         return rejectUnauthorized(res);
     }
 
@@ -38,7 +56,7 @@ async function authenticateAccessToken(req, res, next) {
     let claims;
 
     try {
-        claims = jwt.verify(parts[1], secret, { algorithms: ['HS256'] });
+        claims = jwt.verify(token, secret, { algorithms: ['HS256'] });
     } catch (_error) {
         return rejectUnauthorized(res);
     }

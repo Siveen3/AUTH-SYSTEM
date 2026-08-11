@@ -2,77 +2,79 @@
 
 ## Overview
 
-This repository is structured as an MVC-based authentication system. It includes placeholder files for authentication controllers, models, services, routes, middleware, and views.
+A small MVC-based authentication system built with Express, MongoDB, and EJS.
+It includes signup, login, password reset, JWT-protected pages, and email reset link delivery.
 
 ## Project Structure
 
 - `controllers/` - request handlers and controller logic
 - `models/` - data models and schema definitions
 - `services/` - business logic and reusable authentication services
-- `routes/` - Express routing for authentication endpoints
-- `middleware/` - middleware such as JWT validation
-- `config/` - configuration files (database, environment, etc.)
-- `views/` - server-rendered templates for login, signup, and forgot-password pages
-- `public/` - static assets
-  - `public/css/`
-  - `public/js/`
-  - `public/assets/`
-- `tests/` - unit or integration tests
+- `routes/` - Express routing for authentication and page endpoints
+- `middleware/` - middleware such as JWT validation and error handling
+- `config/` - configuration files for environment and database setup
+- `views/` - server-rendered EJS templates for login, signup, forgot-password, reset-password, and dashboard pages
+- `public/` - static assets for CSS and client-side JavaScript
+- `tests/` - Jest/Supertest tests for backend routes and middleware
 - `server.js` - application entry point
-
 
 ## Running the App
 
-1. Install dependencies (if using Node.js/Express):
+1. Install dependencies:
    ```bash
    npm install
    ```
-2. Start the server:
+2. Copy `config.env.example` to `config.env` and fill in the required values.
+3. Start MongoDB locally or use a hosted MongoDB URI.
+4. Run the server:
    ```bash
-   node server.js
+   npm start
    ```
-3. Open the app in your browser at the configured server URL.
+5. Open the app at `http://localhost:3000`.
 
-## Backend setup
+## Available Pages
 
-Copy `config.env.example` to `config.env`, replace every placeholder secret/SMTP value, and
-install the dependencies before starting the server. The application requires a
-running MongoDB instance configured through `MONGODB_URI`.
+- `GET /login` - sign in page
+- `GET /signup` - create a new account
+- `GET /forgot-password` - request a password reset link
+- `GET /reset-password?token=<token>` - reset your password with a valid token
+- `GET /dashboard` - protected dashboard page after login
 
-```bash
-npm install
-npm start
-```
+## API Endpoints
 
-The API exposes:
+- `POST /api/auth/signup`
+- `POST /api/auth/login`
+- `POST /api/auth/forgot-password`
+- `POST /api/auth/reset-password`
 
-- `GET /health`
-- `POST /api/auth/forgot-password` with `{ "email": "user@example.com" }`
-- `POST /api/auth/reset-password` with
-  `{ "token": "...", "newPassword": "Password1!", "confirmPassword": "Password1!" }`
+## Environment Variables
 
-Password-reset links expire after 15 minutes. They intentionally remain reusable
-until expiry; every successful reset increments `passwordVersion` and therefore
-revokes all previously issued access tokens.
+Copy `config.env.example` to `config.env` and provide values for:
 
-## JWT contract for the login ticket
+- `MONGODB_URI`
+- `JWT_ACCESS_SECRET`
+- `JWT_RESET_SECRET`
+- `PASSWORD_RESET_URL`
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_FROM`
 
-The login endpoint must sign access tokens with `JWT_ACCESS_SECRET` using HS256
-and these claims:
+Optional:
+- `JWT_ACCESS_EXPIRES_IN`
+- `JWT_RESET_EXPIRES_IN`
+- `SMTP_USER`
+- `SMTP_PASS`
 
-```json
-{
-  "sub": "<MongoDB user id>",
-  "type": "access",
-  "ver": 0
-}
-```
+## Authentication Behavior
 
-`ver` must equal the user's current `passwordVersion`. Protected routes use
-`authenticateAccessToken` from `middleware/jwtMiddleware.js`, which exposes
-`req.auth = { userId, claims }` after verification.
+- Passwords are hashed with bcrypt before storage.
+- Login returns a JWT access token stored in a cookie.
+- Dashboard access is protected by `middleware/jwtMiddleware.js`.
+- Password reset sends an email with a tokenized link and updates `passwordVersion`.
 
-Run the focused backend tests with:
+## Testing
+
+Run backend tests with:
 
 ```bash
 npm test

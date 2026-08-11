@@ -1,6 +1,6 @@
 /**
- * Modern SaaS Authentication Suite JavaScript
- * Handle Form Validation, Password Strength, Theme Switcher, Toast Engine & Mock Auth Persistence
+ * Authentication UI helpers
+ * Handles form validation, password strength, theme toggle, toast notifications, and auth requests.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initLoginForm();
     initSignUpForm();
     initForgotPasswordForm();
+    initResetPasswordForm();
     initTermsModal();
     initSocialAuthButtons();
 });
@@ -144,29 +145,7 @@ function resetField(fieldId) {
 }
 
 /* ==========================================
-   4. Local Auth Data Store Simulator
-   ========================================== */
-function getUsersStore() {
-    const users = localStorage.getItem('saas_app_users');
-    if (!users) {
-        // Default seed demo user
-        const defaultUsers = [
-            { name: 'Demo User', email: 'demo@example.com', password: 'Password123!' }
-        ];
-        localStorage.setItem('saas_app_users', JSON.stringify(defaultUsers));
-        return defaultUsers;
-    }
-    return JSON.parse(users);
-}
-
-function saveUserStore(user) {
-    const users = getUsersStore();
-    users.push(user);
-    localStorage.setItem('saas_app_users', JSON.stringify(users));
-}
-
-/* ==========================================
-   5. Login Page Handler
+   4. Login Page Handler
    ========================================== */
 function initLoginForm() {
     const form = document.getElementById('loginForm');
@@ -176,6 +155,11 @@ function initLoginForm() {
     const passwordInput = document.getElementById('loginPassword');
     const rememberCheckbox = document.getElementById('rememberMe');
 
+    const storedEmail = localStorage.getItem('remembered_user');
+    if (storedEmail && emailInput && !emailInput.value) {
+        emailInput.value = storedEmail;
+    }
+
     // Pre-fill email if passed in query param (e.g. redirected from Sign Up)
     const urlParams = new URLSearchParams(window.location.search);
     const paramEmail = urlParams.get('registeredEmail');
@@ -184,7 +168,6 @@ function initLoginForm() {
         showToast('Account registered! You can now log in.', 'success', 5000);
     }
 
-    // Real-time Validation Blur Events
     emailInput.addEventListener('blur', () => {
         if (!emailInput.value.trim()) {
             setFieldError('loginEmail', 'Email address is required');
@@ -203,13 +186,11 @@ function initLoginForm() {
         }
     });
 
-    // Submit Event
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const email = emailInput.value.trim();
         const password = passwordInput.value;
-
         let hasError = false;
 
         if (!email) {
@@ -234,29 +215,39 @@ function initLoginForm() {
             return;
         }
 
-        // Simulate Loading State & API Check
         const submitBtn = form.querySelector('.btn-primary');
         setButtonLoading(submitBtn, true);
 
-        await new Promise(resolve => setTimeout(resolve, 1200)); // Simulating network latency
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
 
-        const users = getUsersStore();
-        const foundUser = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+            const data = await response.json();
+            setButtonLoading(submitBtn, false);
 
-        setButtonLoading(submitBtn, false);
+            if (!response.ok) {
+                setFieldError('loginPassword', data.error?.message || 'Unable to login');
+                showToast(data.error?.message || 'Login failed.', 'error');
+                return;
+            }
 
-        if (foundUser) {
+            document.cookie = `accessToken=${encodeURIComponent(data.accessToken)}; path=/; max-age=3600; SameSite=Lax`;
             if (rememberCheckbox && rememberCheckbox.checked) {
                 localStorage.setItem('remembered_user', email);
+            } else {
+                localStorage.removeItem('remembered_user');
             }
-            showToast(`Welcome back, ${foundUser.name}! Authentication successful.`, 'success');
-            // Reset form
-            form.reset();
-            resetField('loginEmail');
-            resetField('loginPassword');
-        } else {
-            setFieldError('loginPassword', 'Invalid email or password credentials');
-            showToast('Invalid email or password. Try demo@example.com / Password123!', 'error', 5000);
+
+            showToast('Login successful! Redirecting...', 'success');
+            setTimeout(() => {
+                window.location.href = '/dashboard';
+            }, 800);
+        } catch (error) {
+            setButtonLoading(submitBtn, false);
+            showToast('Unable to connect to the server.', 'error');
         }
     });
 }
@@ -274,7 +265,6 @@ function initSignUpForm() {
     const confirmInput = document.getElementById('signupConfirmPassword');
     const termsCheckbox = document.getElementById('termsCheckbox');
 
-    // Password Live Strength Meter Handler
     passwordInput.addEventListener('input', () => {
         const val = passwordInput.value;
         const result = VALIDATION.evaluatePasswordStrength(val);
@@ -300,7 +290,6 @@ function initSignUpForm() {
         return true;
     }
 
-    // Input blur validations
     nameInput.addEventListener('blur', () => {
         if (!nameInput.value.trim()) {
             setFieldError('signupName', 'Full name is required');
@@ -321,13 +310,11 @@ function initSignUpForm() {
         }
     });
 
-    // Form Submit Event
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         let hasError = false;
 
-        // 1. Name Check
         if (!nameInput.value.trim() || !VALIDATION.isValidName(nameInput.value)) {
             setFieldError('signupName', 'Enter a valid full name');
             hasError = true;
@@ -335,7 +322,6 @@ function initSignUpForm() {
             clearFieldError('signupName');
         }
 
-        // 2. Email Check
         if (!emailInput.value.trim() || !VALIDATION.isValidEmail(emailInput.value)) {
             setFieldError('signupEmail', 'Enter a valid email address');
             hasError = true;
@@ -343,7 +329,6 @@ function initSignUpForm() {
             clearFieldError('signupEmail');
         }
 
-        // 3. Password Strength Check (Must be at least Score >= 3)
         const strength = VALIDATION.evaluatePasswordStrength(passwordInput.value);
         if (strength.score < 3) {
             setFieldError('signupPassword', 'Password is too weak. Meet all criteria above.');
@@ -352,12 +337,10 @@ function initSignUpForm() {
             clearFieldError('signupPassword');
         }
 
-        // 4. Password Match Check
         if (!validatePasswordMatch()) {
             hasError = true;
         }
 
-        // 5. Terms Checkbox
         if (!termsCheckbox.checked) {
             showToast('You must accept the Terms & Conditions to register.', 'error');
             hasError = true;
@@ -365,35 +348,37 @@ function initSignUpForm() {
 
         if (hasError) return;
 
-        // Check if email already registered
-        const users = getUsersStore();
-        const existing = users.find(u => u.email.toLowerCase() === emailInput.value.trim().toLowerCase());
-        if (existing) {
-            setFieldError('signupEmail', 'This email is already registered');
-            showToast('An account with this email already exists.', 'error');
-            return;
-        }
-
-        // Simulate API Registration
         const submitBtn = form.querySelector('.btn-primary');
         setButtonLoading(submitBtn, true);
 
-        await new Promise(resolve => setTimeout(resolve, 1400));
+        try {
+            const response = await fetch('/api/auth/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: nameInput.value.trim(),
+                    email: emailInput.value.trim(),
+                    password: passwordInput.value,
+                    confirmPassword: confirmInput.value
+                })
+            });
 
-        // Save User Store
-        saveUserStore({
-            name: nameInput.value.trim(),
-            email: emailInput.value.trim(),
-            password: passwordInput.value
-        });
+            const data = await response.json();
+            setButtonLoading(submitBtn, false);
 
-        setButtonLoading(submitBtn, false);
+            if (!response.ok) {
+                showToast(data.error?.message || 'Registration failed.', 'error');
+                return;
+            }
 
-        showToast('Account created successfully! Redirecting to login...', 'success', 3000);
-
-        setTimeout(() => {
-            window.location.href = `login.html?registeredEmail=${encodeURIComponent(emailInput.value.trim())}`;
-        }, 1500);
+            showToast('Account created successfully! Redirecting to login...', 'success', 3000);
+            setTimeout(() => {
+                window.location.href = `/login?registeredEmail=${encodeURIComponent(emailInput.value.trim())}`;
+            }, 1500);
+        } catch (error) {
+            setButtonLoading(submitBtn, false);
+            showToast('Unable to connect to the server.', 'error');
+        }
     });
 }
 
@@ -452,12 +437,6 @@ function initForgotPasswordForm() {
     if (!form) return;
 
     const emailInput = document.getElementById('forgotEmail');
-    const formView = document.getElementById('forgotFormView');
-    const successView = document.getElementById('forgotSuccessView');
-    const resendBtn = document.getElementById('resendEmailBtn');
-    const timerDisplay = document.getElementById('resendTimer');
-
-    let countdownInterval = null;
 
     emailInput.addEventListener('blur', () => {
         if (!emailInput.value.trim()) {
@@ -481,54 +460,114 @@ function initForgotPasswordForm() {
         const submitBtn = form.querySelector('.btn-primary');
         setButtonLoading(submitBtn, true);
 
-        await new Promise(resolve => setTimeout(resolve, 1200));
+        try {
+            const response = await fetch('/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email })
+            });
 
-        setButtonLoading(submitBtn, false);
+            const data = await response.json();
+            setButtonLoading(submitBtn, false);
 
-        // Transition to Success Card View
-        if (formView && successView) {
-            formView.style.display = 'none';
-            successView.classList.add('is-active');
-            
-            const sentEmailSpan = document.getElementById('sentEmailAddress');
-            if (sentEmailSpan) sentEmailSpan.textContent = email;
+            if (!response.ok) {
+                setFieldError('forgotEmail', data.error?.message || 'Unable to send password reset link.');
+                showToast(data.error?.message || 'Reset request failed.', 'error');
+                return;
+            }
 
-            startResendTimer();
+            clearFieldError('forgotEmail');
+            form.reset();
+            showToast('If an account exists, a password reset link has been sent.', 'success');
+        } catch (error) {
+            setButtonLoading(submitBtn, false);
+            showToast('Unable to connect to the server.', 'error');
+        }
+    });
+}
+
+function initResetPasswordForm() {
+    const form = document.getElementById('resetForm');
+    if (!form) return;
+
+    const passwordInput = document.getElementById('resetPassword');
+    const confirmInput = document.getElementById('resetConfirmPassword');
+    const tokenInput = document.getElementById('resetToken');
+
+    function validateFields() {
+        let valid = true;
+
+        if (!passwordInput.value) {
+            setFieldError('resetPassword', 'New password is required');
+            valid = false;
+        } else if (VALIDATION.evaluatePasswordStrength(passwordInput.value).score < 3) {
+            setFieldError('resetPassword', 'Password must be stronger. Use uppercase, numbers, and special chars.');
+            valid = false;
+        } else {
+            clearFieldError('resetPassword');
         }
 
-        showToast('Password reset link sent to your email!', 'success');
-    });
+        if (!confirmInput.value) {
+            setFieldError('resetConfirmPassword', 'Please confirm your password');
+            valid = false;
+        } else if (confirmInput.value !== passwordInput.value) {
+            setFieldError('resetConfirmPassword', 'Passwords do not match');
+            valid = false;
+        } else {
+            clearFieldError('resetConfirmPassword');
+        }
 
-    if (resendBtn) {
-        resendBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            if (resendBtn.disabled) return;
-            showToast('Reset email resent successfully!', 'info');
-            startResendTimer();
-        });
+        return valid;
     }
 
-    function startResendTimer() {
-        if (!resendBtn || !timerDisplay) return;
-        
-        let secondsLeft = 30;
-        resendBtn.disabled = true;
+    passwordInput.addEventListener('blur', validateFields);
+    confirmInput.addEventListener('blur', validateFields);
 
-        clearInterval(countdownInterval);
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
 
-        timerDisplay.textContent = `${secondsLeft}s`;
+        if (!validateFields()) {
+            showToast('Please fix the highlighted errors before continuing.', 'error');
+            return;
+        }
 
-        countdownInterval = setInterval(() => {
-            secondsLeft--;
-            timerDisplay.textContent = `${secondsLeft}s`;
+        const token = tokenInput?.value;
+        if (!token) {
+            showToast('Missing reset token. Please use the link from your email.', 'error');
+            return;
+        }
 
-            if (secondsLeft <= 0) {
-                clearInterval(countdownInterval);
-                resendBtn.disabled = false;
-                timerDisplay.textContent = 'Ready';
+        const submitBtn = form.querySelector('.btn-primary');
+        setButtonLoading(submitBtn, true);
+
+        try {
+            const response = await fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    token,
+                    newPassword: passwordInput.value,
+                    confirmPassword: confirmInput.value
+                })
+            });
+
+            const data = await response.json();
+            setButtonLoading(submitBtn, false);
+
+            if (!response.ok) {
+                showToast(data.error?.message || 'Unable to reset password.', 'error');
+                return;
             }
-        }, 1000);
-    }
+
+            showToast('Password reset successful! Redirecting to login...', 'success');
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 1500);
+        } catch (error) {
+            setButtonLoading(submitBtn, false);
+            showToast('Unable to connect to the server.', 'error');
+        }
+    });
 }
 
 /* ==========================================

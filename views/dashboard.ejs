@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <main class="page-wrapper">
+        <section class="auth-container">
+            <div class="auth-panel">
+                <header class="auth-header">
+                    <h1>Dashboard</h1>
+                    <p>Welcome to your secure dashboard.</p>
+                </header>
+
+                <div class="dashboard-content">
+                    <p>Your user id is: <strong><%= userId %></strong></p>
+                    <p>This page is protected by JWT authentication.</p>
+                    <a class="btn btn-secondary" href="/logout">Sign out</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

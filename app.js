@@ -3,6 +3,8 @@ const path = require('path');
 
 const authRoutes = require('./routes/authRoutes');
 const passwordResetRoutes = require('./routes/passwordResetRoutes');
+const pageRoutes = require('./routes/pageRoutes');
+const logoutRoutes = require('./routes/logoutRoutes');
 const { notFoundHandler, errorHandler } = require('./middleware/errorMiddleware');
 
 const app = express();
@@ -18,8 +20,10 @@ app.get('/health', (_req, res) => {
     res.status(200).json({ status: 'ok' });
 });
 
+app.use('/', pageRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passwordResetRoutes);
+app.use('/', logoutRoutes);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
