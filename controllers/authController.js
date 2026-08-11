@@ -42,7 +42,17 @@ function createAuthController(service = authService) {
             throw new AppError('Password is required.', 400, 'VALIDATION_ERROR');
         }
 
-        const token = await service.authenticateUser(email.trim().toLowerCase(), password);
+        let token;
+
+        try {
+            token = await service.authenticateUser(email.trim().toLowerCase(), password);
+        } catch (err) {
+            // If service threw an operational AppError, rethrow it
+            if (err instanceof AppError) throw err;
+
+            // Otherwise treat as authentication failure to avoid leaking internals
+            throw new AppError('Invalid email or password.', 401, 'AUTHENTICATION_FAILED');
+        }
 
         return res.status(200).json({ accessToken: token });
     }
