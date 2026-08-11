@@ -1,0 +1,7 @@
+node_modules/
+.env
+.env.*
+config.env
+!config.env.example
+coverage/
+npm-debug.log*
