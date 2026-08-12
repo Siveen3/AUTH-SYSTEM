@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page not found</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <main class="page-wrapper">
+        <section class="auth-container">
+            <div class="auth-banner">
+                <div class="brand-header">
+                    <div class="brand-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M12 4v16" stroke="white"/></svg>
+                    </div>
+                    <div class="brand-name">PharmaStore</div>
+                </div>
+
+                <div class="banner-hero-content">
+                    <h2 class="banner-title">Page not found</h2>
+                    <p class="banner-subtitle">The page you were looking for does not exist.</p>
+                </div>
+            </div>
+
+            <div class="auth-form-card">
+                <div class="form-header">
+                    <div class="form-title">Oops!</div>
+                    <div class="form-subtitle"><%= message || 'We could not find that product or page.' %></div>
+                </div>
+                <div class="dashboard-content">
+                    <p>Try returning to your dashboard or browse the store again.</p>
+                    <a class="btn-primary btn-small" href="/dashboard">Go to Dashboard</a>
+                    <a class="btn-secondary btn-small" href="/products">Browse Products</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

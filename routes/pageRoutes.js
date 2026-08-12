@@ -15,6 +15,11 @@ function createPageRouter() {
     router.get('/forgot-password', pageController.renderForgotPasswordPage);
     router.get('/reset-password', pageController.renderResetPasswordPage);
     router.get('/dashboard', authenticateAccessToken, pageController.renderDashboardPage);
+    router.get('/products', authenticateAccessToken, pageController.renderProductsPage);
+    router.get('/product/:id', authenticateAccessToken, pageController.renderProductDetailsPage);
+    router.get('/cart', authenticateAccessToken, pageController.renderCartPage);
+    router.post('/cart/add', authenticateAccessToken, pageController.addToCartPage);
+    router.post('/cart/remove/:id', authenticateAccessToken, pageController.removeCartItem);
 
     return router;
 }

@@ -56,6 +56,11 @@ This fork includes a refreshed, modern UI for the auth views (login, signup, for
 - `GET /forgot-password` - request a password reset link
 - `GET /reset-password?token=<token>` - reset your password with a valid token
 - `GET /dashboard` - protected dashboard page after login
+- `GET /products` - protected product catalog page
+- `GET /product/:id` - protected product details page
+- `GET /cart` - protected cart review page
+- `POST /cart/add` - add a product to your cart from the catalog or product page
+- `POST /cart/remove/:id` - remove an item from your cart
 
 ## API Endpoints
 
@@ -63,6 +68,11 @@ This fork includes a refreshed, modern UI for the auth views (login, signup, for
 - `POST /api/auth/login`
 - `POST /api/auth/forgot-password`
 - `POST /api/auth/reset-password`
+- `GET /api/products` - JSON list of products
+- `GET /api/products/:id` - JSON product details
+- `GET /api/cart` - JSON cart items for the signed-in user
+- `POST /api/cart/add` - add an item to the active user cart
+- `DELETE /api/cart/:id` - remove an item from the active user cart
 
 ## Environment Variables
 

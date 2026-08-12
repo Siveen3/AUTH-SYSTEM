@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Products</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <main class="page-wrapper">
+        <section class="auth-container">
+            <div class="auth-banner">
+                <div class="brand-header">
+                    <div class="brand-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M12 4v16" stroke="white"/></svg>
+                    </div>
+                    <div class="brand-name">PharmaStore</div>
+                </div>
+
+                <div class="banner-hero-content">
+                    <h2 class="banner-title">Medical Products</h2>
+                    <p class="banner-subtitle">Browse medical and wellness essentials with secure cart support.</p>
+                    <div class="banner-illustration-wrapper">
+                        <img class="banner-illustration" src="/assets/auth_hero.jpg" alt="Products" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-form-card">
+                <div class="form-header">
+                    <div class="form-title">Medical Products</div>
+                    <div class="form-subtitle">Choose items and add them to your cart.</div>
+                </div>
+
+                <div class="product-grid">
+                    <% products.forEach(product => { %>
+                        <div class="product-card">
+                            <h3><%= product.name %></h3>
+                            <p class="product-category"><%= product.category %></p>
+                            <p class="product-description"><%= product.description %></p>
+                            <p class="product-price">$<%= product.price.toFixed(2) %></p>
+                            <div class="product-actions">
+                                <a class="btn-primary btn-small" href="/product/<%= product.id %>">View</a>
+                                <form class="inline-form" method="post" action="/cart/add">
+                                    <input type="hidden" name="productId" value="<%= product.id %>">
+                                    <input type="hidden" name="quantity" value="1">
+                                    <button class="btn-secondary btn-small" type="submit">Add to Cart</button>
+                                </form>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+
+                <footer class="auth-footer" style="margin-top:1rem">
+                    <p><a href="/dashboard">Back to dashboard</a> · <a href="/cart">View cart</a></p>
+                </footer>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

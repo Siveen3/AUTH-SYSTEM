@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <main class="page-wrapper">
+        <section class="auth-container">
+            <div class="auth-banner">
+                <div class="brand-header">
+                    <div class="brand-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M12 4v16" stroke="white"/></svg>
+                    </div>
+                    <div class="brand-name">PharmaStore</div>
+                </div>
+
+                <div class="banner-hero-content">
+                    <h2 class="banner-title">Shopping Cart</h2>
+                    <p class="banner-subtitle">Review selected items before checkout.</p>
+                    <div class="banner-illustration-wrapper">
+                        <img class="banner-illustration" src="/assets/auth_hero.jpg" alt="Cart" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-form-card">
+                <div class="form-header">
+                    <div class="form-title">Your Cart</div>
+                    <div class="form-subtitle">Manage items before proceeding.</div>
+                </div>
+
+                <div class="cart-list">
+                    <% if (cartItems.length === 0) { %>
+                        <p class="cart-empty">Your cart is empty.</p>
+                    <% } else { %>
+                        <% cartItems.forEach(item => { %>
+                            <div class="cart-item-card">
+                                <h4><%= item.product?.name || 'Unknown product' %></h4>
+                                <p class="product-category"><%= item.product?.category || '' %></p>
+                                <p class="product-price">$<%= item.product?.price.toFixed(2) || '0.00' %> x <%= item.quantity %></p>
+                                <p class="product-total">Total: $<%= item.total.toFixed(2) %></p>
+                                <form class="remove-form" method="post" action="/cart/remove/<%= item.productId %>">
+                                    <button class="btn-secondary btn-small" type="submit">Remove</button>
+                                </form>
+                            </div>
+                        <% }); %>
+                        <div class="cart-total-bar">
+                            <strong>Cart total:</strong> $<%= cartTotal.toFixed(2) %>
+                        </div>
+                    <% } %>
+                </div>
+
+                <footer class="auth-footer" style="margin-top:1rem">
+                    <p><a href="/products">Continue shopping</a> · <a href="/dashboard">Dashboard</a></p>
+                </footer>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

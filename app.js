@@ -4,6 +4,8 @@ const path = require('path');
 const authRoutes = require('./routes/authRoutes');
 const passwordResetRoutes = require('./routes/passwordResetRoutes');
 const pageRoutes = require('./routes/pageRoutes');
+const productRoutes = require('./routes/productRoutes');
+const cartRoutes = require('./routes/cartRoutes');
 const logoutRoutes = require('./routes/logoutRoutes');
 const { notFoundHandler, errorHandler } = require('./middleware/errorMiddleware');
 
@@ -23,6 +25,8 @@ app.get('/health', (_req, res) => {
 app.use('/', pageRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/auth', passwordResetRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
 app.use('/', logoutRoutes);
 
 app.use(notFoundHandler);

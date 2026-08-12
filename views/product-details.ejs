@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= product.name %></title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <main class="page-wrapper">
+        <section class="auth-container">
+            <div class="auth-banner">
+                <div class="brand-header">
+                    <div class="brand-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12h16M12 4v16" stroke="white"/></svg>
+                    </div>
+                    <div class="brand-name">PharmaStore</div>
+                </div>
+
+                <div class="banner-hero-content">
+                    <h2 class="banner-title"><%= product.name %></h2>
+                    <p class="banner-subtitle"><%= product.category %></p>
+                    <div class="banner-illustration-wrapper">
+                        <img class="banner-illustration" src="/assets/auth_hero.jpg" alt="Product" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="auth-form-card">
+                <div class="form-header">
+                    <div class="form-title">Product Details</div>
+                    <div class="form-subtitle">Review the item and add it to your cart.</div>
+                </div>
+
+                <div class="product-detail-card">
+                    <h3><%= product.name %></h3>
+                    <p class="product-category"><%= product.category %></p>
+                    <p class="product-description"><%= product.description %></p>
+                    <p class="product-price">$<%= product.price.toFixed(2) %></p>
+                    <p class="stock-level">Stock available: <%= product.stock %></p>
+
+                    <form id="addToCartForm" class="auth-form" method="post" action="/cart/add">
+                        <input type="hidden" name="productId" value="<%= product.id %>">
+                        <div class="form-group">
+                            <label class="form-label" for="quantity">Quantity</label>
+                            <input id="quantity" class="form-control" name="quantity" type="number" min="1" value="1" required>
+                        </div>
+                        <button class="btn-primary" type="submit">Add to Cart</button>
+                    </form>
+                </div>
+
+                <footer class="auth-footer" style="margin-top:1rem">
+                    <p><a href="/products">Back to products</a> · <a href="/cart">View cart</a></p>
+                </footer>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
