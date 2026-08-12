@@ -10,7 +10,12 @@ function createPasswordResetRouter({
 } = {}) {
     const router = express.Router();
 
+    // Step 1: request a password-reset OTP
+    // Rate-limited to 5 requests per IP per 15 minutes
     router.post('/forgot-password', forgotPasswordLimiter, asyncHandler(controller.forgotPassword));
+
+    // Step 2: submit the OTP + new password
+    // Body: { email, otp, newPassword, confirmPassword }
     router.post('/reset-password', asyncHandler(controller.resetPassword));
 
     return router;

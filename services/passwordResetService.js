@@ -1,96 +1,98 @@
-const jwt = require('jsonwebtoken');
-
 const User = require('../models/userModel');
 const emailService = require('./emailService');
 const AppError = require('../utils/AppError');
+const generateOTP = require('../utils/generateOtp');
+const { setRecord, getRecord, deleteRecord, templateOtpWithEmail } = require('../utils/redisClient');
 
-const INVALID_RESET_TOKEN_MESSAGE = 'The password-reset token is invalid or has expired.';
-const OBJECT_ID_PATTERN = /^[a-f\d]{24}$/i;
+// OTP TTL: 5 minutes
+const OTP_TTL_SECONDS = 5 * 60;
 
-function invalidResetTokenError() {
-    return new AppError(INVALID_RESET_TOKEN_MESSAGE, 400, 'INVALID_OR_EXPIRED_RESET_TOKEN');
-}
+// ---------------------------------------------------------------------------
+// Password-reset service factory
+// ---------------------------------------------------------------------------
 
 function createPasswordResetService({
     UserModel = User,
-    jwtLibrary = jwt,
     mailer = emailService,
-    env = process.env,
-    logger = console
+    logger = console,
+    otpStore = { setRecord, getRecord, deleteRecord, templateOtpWithEmail }
 } = {}) {
+
+    // -----------------------------------------------------------------------
+    // Step 1: request a password reset → send OTP to email
+    // -----------------------------------------------------------------------
+    /**
+     * Generates an OTP and emails it to the account holder.
+     * Returns silently for unknown addresses to avoid user-enumeration.
+     *
+     * @param {string} email
+     * @returns {Promise<void>}
+     */
     async function requestPasswordReset(email) {
-        const normalizedEmail = email.trim().toLowerCase();
+        const normalizedEmail = String(email).trim().toLowerCase();
+
         const user = await UserModel.findOne({ email: normalizedEmail }).select('_id email');
 
-        if (!user) {
-            return;
-        }
+        // Do not reveal whether the address exists
+        if (!user) return;
 
         try {
-            if (!env.JWT_RESET_SECRET || !env.PASSWORD_RESET_URL) {
-                throw new Error('Password-reset configuration is missing');
-            }
+            const otp = generateOTP();
+            const otpKey = otpStore.templateOtpWithEmail(normalizedEmail);
+            await otpStore.setRecord(otpKey, otp, OTP_TTL_SECONDS);
 
-            const token = jwtLibrary.sign(
-                { type: 'password-reset' },
-                env.JWT_RESET_SECRET,
-                {
-                    algorithm: 'HS256',
-                    subject: String(user._id),
-                    expiresIn: env.JWT_RESET_EXPIRES_IN || '15m'
-                }
-            );
-
-            const resetUrl = new URL(env.PASSWORD_RESET_URL);
-            resetUrl.searchParams.set('token', token);
-
-            await mailer.sendPasswordResetEmail({
+            await mailer.sendOtpEmail({
                 to: user.email,
-                resetUrl: resetUrl.toString()
+                subject: 'Reset your password – AUTH-SYSTEM',
+                otp
             });
         } catch (_error) {
-            logger.error('Password-reset email delivery failed.');
+            logger.error('Password-reset OTP delivery failed.');
         }
     }
 
-    async function resetPassword(token, newPassword) {
-        if (!env.JWT_RESET_SECRET) {
+    // -----------------------------------------------------------------------
+    // Step 2: verify OTP + set new password
+    // -----------------------------------------------------------------------
+    /**
+     * Validates the submitted OTP against Redis, then updates the user's password.
+     *
+     * @param {string}        email       - The account email address.
+     * @param {string|number} otp         - The OTP received by the user.
+     * @param {string}        newPassword - The desired new password (already validated by controller).
+     * @returns {Promise<void>}
+     */
+    async function resetPassword(email, otp, newPassword) {
+        const normalizedEmail = String(email).trim().toLowerCase();
+
+        const user = await UserModel.findOne({ email: normalizedEmail }).select('+password +passwordVersion');
+
+        if (!user) {
             throw new AppError(
-                'JWT reset-token configuration is missing.',
-                500,
-                'AUTH_CONFIGURATION_ERROR'
+                'The password-reset code is invalid or has expired.',
+                400,
+                'INVALID_OR_EXPIRED_RESET_OTP'
             );
         }
 
-        let claims;
+        const otpKey = otpStore.templateOtpWithEmail(normalizedEmail);
+        const storedOtp = await otpStore.getRecord(otpKey);
 
-        try {
-            claims = jwtLibrary.verify(token, env.JWT_RESET_SECRET, {
-                algorithms: ['HS256']
-            });
-        } catch (_error) {
-            throw invalidResetTokenError();
+        if (storedOtp === null || String(storedOtp) !== String(otp)) {
+            throw new AppError(
+                'The password-reset code is invalid or has expired.',
+                400,
+                'INVALID_OR_EXPIRED_RESET_OTP'
+            );
         }
 
-        if (
-            !claims ||
-            typeof claims !== 'object' ||
-            typeof claims.sub !== 'string' ||
-            !OBJECT_ID_PATTERN.test(claims.sub) ||
-            claims.type !== 'password-reset'
-        ) {
-            throw invalidResetTokenError();
-        }
-
-        const user = await UserModel.findById(claims.sub);
-
-        if (!user) {
-            throw invalidResetTokenError();
-        }
-
+        // Update password and invalidate existing tokens by bumping the version
         user.password = newPassword;
         user.passwordVersion = (user.passwordVersion || 0) + 1;
         await user.save();
+
+        // OTP is single-use – delete it from Redis after a successful reset
+        await otpStore.deleteRecord(otpKey);
     }
 
     return {

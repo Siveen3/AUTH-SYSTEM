@@ -3,9 +3,22 @@ const AppError = require('../utils/AppError');
 const { isValidEmail, isStrongPassword } = require('../validators/passwordResetValidation');
 
 const GENERIC_FORGOT_PASSWORD_MESSAGE =
-    'If an account exists for that email, a password-reset link has been sent.';
+    'If an account exists for that email, a password-reset code has been sent.';
+
+// ---------------------------------------------------------------------------
+// Password-reset controller factory
+// ---------------------------------------------------------------------------
 
 function createPasswordResetController(service = passwordResetService) {
+
+    // -----------------------------------------------------------------------
+    // POST /api/auth/forgot-password
+    // Body: { email }
+    // -----------------------------------------------------------------------
+    /**
+     * Initiates an OTP-based password reset.
+     * Always returns the same generic response to prevent user-enumeration.
+     */
     async function forgotPassword(req, res) {
         const { email } = req.body || {};
 
@@ -18,11 +31,22 @@ function createPasswordResetController(service = passwordResetService) {
         return res.status(202).json({ message: GENERIC_FORGOT_PASSWORD_MESSAGE });
     }
 
+    // -----------------------------------------------------------------------
+    // POST /api/auth/reset-password
+    // Body: { email, otp, newPassword, confirmPassword }
+    // -----------------------------------------------------------------------
+    /**
+     * Validates the OTP and sets the new password.
+     */
     async function resetPassword(req, res) {
-        const { token, newPassword, confirmPassword } = req.body || {};
+        const { email, otp, newPassword, confirmPassword } = req.body || {};
 
-        if (typeof token !== 'string' || !token.trim()) {
-            throw new AppError('A password-reset token is required.', 400, 'VALIDATION_ERROR');
+        if (!isValidEmail(email)) {
+            throw new AppError('A valid email address is required.', 400, 'VALIDATION_ERROR');
+        }
+
+        if (otp === undefined || otp === null || String(otp).trim() === '') {
+            throw new AppError('A password-reset code is required.', 400, 'VALIDATION_ERROR');
         }
 
         if (newPassword !== confirmPassword) {
@@ -37,7 +61,11 @@ function createPasswordResetController(service = passwordResetService) {
             );
         }
 
-        await service.resetPassword(token.trim(), newPassword);
+        await service.resetPassword(
+            String(email).trim().toLowerCase(),
+            otp,
+            newPassword
+        );
 
         return res.status(200).json({ message: 'Password reset successful.' });
     }
