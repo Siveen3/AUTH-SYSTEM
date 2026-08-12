@@ -1,7 +1,13 @@
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 
-if (String(process.env.USE_IN_MEMORY_DB).toLowerCase() === 'true') {
+// Use Supabase if configured
+if (String(process.env.USE_SUPABASE).toLowerCase() === 'true') {
+    const SupabaseUserModel = require('./supabaseUserModel');
+    module.exports = SupabaseUserModel;
+}
+// Use in-memory store for testing
+else if (String(process.env.USE_IN_MEMORY_DB).toLowerCase() === 'true') {
     const store = {
         users: []
     };

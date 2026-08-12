@@ -7,12 +7,18 @@ require('dotenv').config({
 
 const app = require('./app');
 const connectDatabase = require('./config/dbConfig');
+const { initSupabase } = require('./config/supabaseConfig');
 
 const port = Number.parseInt(process.env.PORT, 10) || 3000;
 
 async function startServer() {
     try {
-        await connectDatabase();
+        // Initialize Supabase for user authentication
+        if (process.env.USE_SUPABASE === 'true') {
+            await initSupabase();
+        } else {
+            await connectDatabase();
+        }
 
         app.listen(port, () => {
             console.log(`Server running at http://localhost:${port}`);
